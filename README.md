@@ -35,7 +35,7 @@ Do this before the start because Elasticsearch requires a higher value to work
 
 4. go to the Elasticsearch-RAG folder and do `docker compose up`
 5. make sure you have Elasticsearch 8.11 or later (we use 8.16 here in this project) if you want to use your own Elasticsearch image
-6. if you get this error on a mac then just open the console in the docker app: error getting credentials - err: exec: docker-credential-desktop: executable file not found in $PATH, out: 
+6. if you get this error on a mac then just open the console in the docker app: `error getting credentials - err: exec: docker-credential-desktop: executable file not found in $PATH, out: `
 7. Install xcode command line tools: `xcode-select --install`
 8. make sure you're at python 3.8.1 or larger -> installed 3.13.0 from https://www.python.org/downloads/
 
