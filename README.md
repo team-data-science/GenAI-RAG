@@ -1,12 +1,15 @@
 # Local GenAI RAG with Elasticsearch & Mistral
 
 - This how-to is based on this one from Elasticsearch: https://www.elastic.co/search-labs/blog/rag-with-llamaIndex-and-elasticsearch
-- You can also just clone our GitHub Repo for the code and docker setup
+- Instead of Elasticsearch cloud we're going to run everything locally
+- The simplest way to get this done is to just clone this GitHub Repo for the code and docker setup
+- I've tried this on a M1 Mac. Changes for Windows with WSL will come later.
+- The biggest problems that I had were actually installing the dependencies rather than the code itself.
 
 ## Install Ollama
 - Download Ollama from here https://ollama.com/download/mac
 - Unzip, drag into applications and install
-- do `ollama run mistral` (It's going to download the Mistral 7b model, 4GB size)
+- do `ollama run mistral` (It's going to download the Mistral 7b model, 4.1GB size)
 - Create a new folder in Documents "Elasticsearch-RAG"
 - Open that folder in VSCode
 
@@ -14,6 +17,22 @@
 - Use the docker-compose file from the Log Monitoring course: https://github.com/team-data-science/GenAI-RAG/blob/main/docker-compose.yml
 - Download Docker Desktop from here: https://www.docker.com/products/docker-desktop/
 - Install docker desktop and sign in in the app/create a user -> sends you to the browser
+
+### For Windows Users
+**Configure WSL2 to use max only 4GB of ram:**
+```
+wsl --shutdown
+notepad "$env:USERPROFILE/.wslconfig"
+```
+.wslconfig file:
+```
+[wsl2]
+memory=4GB   # Limits VM memory in WSL 2 up to 4GB
+```
+**Modify the Linux kernel map count in WSL**
+Do this before the start because Elasticsearch requires a higher value to work
+`sudo sysctl -w vm.max_map_count=262144`
+
 - go to the Elasticsearch-RAG folder and do `docker compose up`
 - make sure you have Elasticsearch 8.11 or later (we use 8.16 here in this project)
 - if you get this error on a mac then just open the console in the docker app: error getting credentials - err: exec: docker-credential-desktop: executable file not found in $PATH, out: 
@@ -25,7 +44,7 @@
 - setup virtual python environment - go to the Elasticsearch-RAG folder and do 
 `python3 -m venv .elkrag`
 
-- install libraries
+Install required libraries:
 ```
 source .elkrag/bin/activate
 pip install llama-index (optional python3 -m pip install package name)
