@@ -43,10 +43,11 @@ Do this before the start because Elasticsearch requires a higher value to work
 
 1. setup virtual python environment - go to the Elasticsearch-RAG folder and do 
 `python3 -m venv .elkrag`
+2. enable the environment
+`source .elkrag/bin/activate`
 
-2. Install required libraries:
+2. Install required libraries (do one at a time so you see errors):
 ```
-source .elkrag/bin/activate
 pip install llama-index (optional python3 -m pip install package name)
 pip install llama-index-embeddings-ollama
 pip install llama-index-llms-ollama
