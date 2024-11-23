@@ -1,0 +1,7 @@
+
+Preparation:
+Here's a CV please create a JSON that separates each section. Just two attributes section name and content. Example sections are: Person details, Experience, Education, Certification, skills. Do not leave out or rephrase text:
+
+
+Cleaning:
+Here's a CV from a student in form of a JSON. please create me a json with the content. Every job needs to have it's own object. Each object has attributes for Company, Job name, City, country, year from and year to and a list of responsibilities. Create an object for skills which contains a list of skills and one object for education with the name of the institution, the program, location and year of graduation. If there is a summary add it as a single object to the json. Do not leave out or rephrase content.

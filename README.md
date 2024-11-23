@@ -68,3 +68,7 @@ pip install python-dotenv
 ## Query data from elasticsearch and create an output with Mistral
 1. if everything is good then run the query.py file
 2. try a few queries :)
+
+## Install libraries to extract text from pdfs
+pip install PyPDF2 pdfplumber PyMuPDF
+I had to Shift+Command+p then python clear workspace cache and reload window. Then it saw it :/
