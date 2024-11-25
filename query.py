@@ -11,7 +11,9 @@ Settings.embed_model= OllamaEmbedding("mistral")    # Create a VectorStoreIndex 
 index = VectorStoreIndex.from_vector_store(es_vector_store) # Create a VectorStoreIndex from the existing Elasticsearch vector store
 query_engine = index.as_query_engine(local_llm, similarity_top_k=10)    # Create a query engine from the index using the local LLM and set top-k similarity results to 10
 
-# Define the query string for the question you want to ask the system
+# Define the query string for the question you want to ask the system you'll see that it has some problems understanding the context 
+# Especially how to find the policy number from the person's name. 
+
 #query="Give me summary of water related issues"
 #query="What policy number does emily green, born April 10th, 1988 have?"
 #query="Who has the policy number DEF4567"

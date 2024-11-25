@@ -1,3 +1,8 @@
+# 2024-11-25
+# Andreas Kretz
+# This code currently doesn't work because the preparation of the text for ElasticSearch doesn't work
+# Try to fix this and write the data
+
 import json, os  # Importing JSON for handling JSON data and os for interacting with the operating system
 import fitz  # PyMuPDF
 from llama_index.core import Document, Settings  # Importing Document class and Settings for managing LlamaIndex
@@ -10,47 +15,40 @@ from llama_index.core import VectorStoreIndex, QueryBundle, Response, Settings
 from llama_index.embeddings.ollama import OllamaEmbedding
 from llama_index.llms.ollama import Ollama
 from index_raw import es_vector_store
+from ollama import chat
+from ollama import ChatResponse
 
+# extract text form the pdf
 def extract_text_from_pdf(path):
     doc = fitz.open(path)
+    text = ""
+
     for page_num in range(len(doc)):
         page = doc.load_page(page_num)
-        text = page.get_text()
+        page_text = page.get_text()
+        text += page_text
     print(text)
     
     return text
 
-def prepare_text_to_json(text):
-    prepare_instructions = "Here's a CV please create a JSON that separates each section. Just two attributes section name and content. Example sections are: Person details, Experience, Education, Certification, skills. Do not leave out or rephrase text: "
-    response = local_llm(prepare_instructions + text)
-    print(".....Prepared this json.....\n")
-    print(response)
+# feed the pdf into mistral and get a JSON back
+# this fails currently because I cannot get a good answer from mistral. the problem is with escaping \n and '. 
 
-    return response
-
-def clean_json(cs_json):
-    clean_instructions = "Here's a CV from a student in form of a JSON. please create me a json with the content. Every job needs to have it's own object. Each object has attributes for Company, Job name, City, country, year from and year to and a list of responsibilities. Create an object for skills which contains a list of skills and one object for education with the name of the institution, the program, location and year of graduation. If there is a summary add it as a single object to the json. Do not leave out or rephrase content: "
-    response = local_llm(clean_instructions + cs_json)
-
-    print(".....Cleaned this json.....\n")
-    return response
-
-
-def get_documents_from_file(file):
-    """Reads a JSON file and returns a list of Document objects"""
-
-    # Open the JSON file in read-text mode
-    with open(file=file, mode='rt') as f:
-        conversations_dict = json.loads(f.read()) # Load the file contents into a Python dictionary
-      
-    # Create a list of Document objects using the 'conversation' field as text 
-    # and 'conversation_id' field as metadata
-    documents = [Document(text=item['conversation'],
-                          metadata={"conversation_id": item['conversation_id']})
-                 for item in conversations_dict]
+def prepare_text_to_json(text_to_summarize):
+    instruction_template = "Here's a text. Encapsulate it into a json as a string and don't turn it into json attributes. Keep it flat. The attribute where the text should go into is called text. Create another attribute of the json called name and put the name of the person there:"
     
-    return documents # Return the list of Document objects
+    response: ChatResponse = chat(model='mistral', messages=[
+        {
+            'role': 'user',
+            'content': instruction_template + text_to_summarize,
+        },
+    ])
+ 
+    
+    print(".....Prepared this json.....\n")
+    print(response['message']['content'])
 
+    return response['message']['content']
 
 
 # Define an Elasticsearch vector store with configuration for local Elasticsearch
@@ -62,20 +60,6 @@ es_vector_store = ElasticsearchStore(
 )
 
 local_llm = Ollama(model="mistral")
-
-# Uncomment this if using Elastic Cloud and ensure ELASTIC_CLOUD_ID and ELASTIC_API_KEY are set in the .env file
-
-# Load the .env file contents into environment variables
-# This is used to access sensitive information like API keys or credentials
-# load_dotenv('.env')
-
-# es_vector_store = ElasticsearchStore(
-#     index_name="calls",  # Name of the Elasticsearch index
-#     vector_field='conversation_vector',  # Field for vector embeddings
-#     text_field='conversation',  # Field for storing original text
-#     es_cloud_id=os.getenv("ELASTIC_CLOUD_ID"),  # Cloud ID from the .env file
-#     es_api_key=os.getenv("ELASTIC_API_KEY")  # API key from the .env file
-# )
 
 def main():
     ollama_embedding = OllamaEmbedding("mistral")   # Initialize the embedding model for generating embeddings using the "mistral" model
@@ -89,15 +73,14 @@ def main():
         ],
         vector_store=es_vector_store  # Use the configured Elasticsearch vector store
     )
-    extracted = extract_text_from_pdf('resume_michal.pdf')
-    prepped_json = prepare_text_to_json(extracted)
 
-    # Ensure your JSON is formatted into a list of "documents" expected by the pipeline
-    documents = []
-    for entry in prepped_json:
-        # Example: If prepped_json is a list of dictionaries with a "text" field
-        documents.append({"text": entry["content"]})  # Adjust key based on your JSON structure
+    extracted = extract_text_from_pdf('Liam_McGivney_CV.pdf')   #extract the text from the CV
+    prepped_json = prepare_text_to_json(extracted)      # prepare the json
 
+    #create a document (I think this is wrong right now)
+    documents = Document(text=prepped_json['text'], metadata={"name": prepped_json['name']})
+    #documents = [Document(text=item['text']) for entry in prepped_json]
+    #documents = [Document(text=item['text'], metadata={"name": item['name']}) for item in prepped_json]
 
     pipeline.run(documents=documents)   # Run the pipeline to process documents and store embeddings in Elasticsearch
     print(".....Done running pipeline.....\n")  # Print a completion message

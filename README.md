@@ -41,12 +41,61 @@ Do this before the start because Elasticsearch requires a higher value to work
 
 ## Setup the virtual Python environment
 
-1. setup virtual python environment - go to the Elasticsearch-RAG folder and do 
+### preparation on a Mac
+#### install brew 
+which brew
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+export PATH="/opt/homebrew/bin:$PATH"
+brew --version
+brew install pyenv
+brew install pyenv-virtualenv
+
+#### install pyenv
+```
+brew install pyenv
+brew install pyenv-virtualenv
+```
+
+Modify the path so that pyenv is in the path variable
+`nano ~/.zshrc`
+
+```
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init --path)"
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+```
+
+install dependencies for building python versions
+`brew install openssl readline sqlite3 xz zlib`
+
+Reload to apply changes
+`source ~/.zshrc`
+
+install python
+```
+pyenv install 3.11.6
+pyenv version
+```
+
+Set Python version system wide
+`pyenv global 3.11.6`
+
+```
+pyenv virtualenv <python-version> <new-virtualenv-name>
+pyenv activate <your-virtualenv-name>
+pyenv virtualenv-delete <your-virtualenv-name>
+```
+
+### Windows without pyenv
+setup virtual python environment - go to the Elasticsearch-RAG folder and do 
 `python3 -m venv .elkrag`
-2. enable the environment
+enable the environment
 `source .elkrag/bin/activate`
 
-2. Install required libraries (do one at a time so you see errors):
+
+## Install required libraries (do one at a time so you see errors):
 ```
 pip install llama-index (optional python3 -m pip install package name)
 pip install llama-index-embeddings-ollama
