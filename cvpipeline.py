@@ -35,7 +35,7 @@ def extract_text_from_pdf(path):
 # this fails currently because I cannot get a good answer from mistral. the problem is with escaping \n and '. 
 
 def prepare_text_to_json(text_to_summarize):
-    instruction_template = "Here's a text. Encapsulate it into a json as a string and don't turn it into json attributes. Keep it flat. The attribute where the text should go into is called text. Create another attribute of the json called name and put the name of the person there:"
+    instruction_template = 'Extract the name and text from the following document and output it in the format {"name": string, "text": string}. Only provide the response in this format, with no extra explanation use double quotes for the elements:'
     
     response: ChatResponse = chat(model='mistral', messages=[
         {
@@ -75,10 +75,10 @@ def main():
     )
 
     extracted = extract_text_from_pdf('Liam_McGivney_CV.pdf')   #extract the text from the CV
-    prepped_json = prepare_text_to_json(extracted)      # prepare the json
+    prepped_json = json.loads(prepare_text_to_json(extracted))      # prepare the json
 
     #create a document (I think this is wrong right now)
-    documents = Document(text=prepped_json['text'], metadata={"name": prepped_json['name']})
+    documents = [Document(text=prepped_json['text'], metadata={"name": prepped_json['name']})]
     #documents = [Document(text=item['text']) for entry in prepped_json]
     #documents = [Document(text=item['text'], metadata={"name": item['name']}) for item in prepped_json]
 
