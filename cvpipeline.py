@@ -75,14 +75,19 @@ def main():
     )
 
     extracted = extract_text_from_pdf('Liam_McGivney_CV.pdf')   #extract the text from the CV
-    prepped_json = prepare_text_to_json(extracted)      # prepare the json
+    #prepped_json = prepare_text_to_json(extracted)      # prepare the json
+
+    lines = extracted.split("\n")
+    cv_name = lines[0]
+    cv_text = "\n".join(lines[1:])
 
     #create a document (I think this is wrong right now)
-    documents = Document(text=prepped_json['text'], metadata={"name": prepped_json['name']})
+    documents = Document(text=cv_text,metadata={"name":cv_name})
+    #documents = Document(text=prepped_json['text'], metadata={"name": prepped_json['name']})
     #documents = [Document(text=item['text']) for entry in prepped_json]
     #documents = [Document(text=item['text'], metadata={"name": item['name']}) for item in prepped_json]
 
-    pipeline.run(documents=documents)   # Run the pipeline to process documents and store embeddings in Elasticsearch
+    pipeline.run(documents=[documents])   # Run the pipeline to process documents and store embeddings in Elasticsearch
     print(".....Done running pipeline.....\n")  # Print a completion message
 
 # Entry point of the script
