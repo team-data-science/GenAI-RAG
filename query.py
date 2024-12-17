@@ -2,7 +2,7 @@
 from llama_index.core import VectorStoreIndex, QueryBundle, Response, Settings
 from llama_index.embeddings.ollama import  OllamaEmbedding
 from llama_index.llms.ollama import Ollama
-from index_raw import es_vector_store
+from cvpipeline import es_vector_store
 
 # Local LLM to send user query to
 local_llm = Ollama(model="mistral") # Initialize a local language model (LLM) using the "mistral" model from Ollama
@@ -18,7 +18,10 @@ query_engine = index.as_query_engine(local_llm, similarity_top_k=10)    # Create
 #query="What policy number does emily green, born April 10th, 1988 have?"
 #query="Who has the policy number DEF4567"
 #query="What information about the person do you need to determin the policy number?"
-query="What policy number does emily green, living in 101 Pine St, Boston, MA 02101 have?"
+#query="What policy number does emily green, living in 101 Pine St, Boston, MA 02101 have?"
+
+#query="For which bank did Liam McGivney work?"
+query="where is Liam McGivney from and where does he currently reside?"
 
 # Create a QueryBundle object, which packages the query and its embedding
 # The embedding is generated using the configured embedding model in Settings
