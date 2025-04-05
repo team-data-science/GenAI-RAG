@@ -121,3 +121,26 @@ pip install python-dotenv
 ## Install libraries to extract text from pdfs
 pip install PyPDF2 pdfplumber PyMuPDF
 I had to Shift+Command+p then python clear workspace cache and reload window. Then it saw it :/
+
+
+
+# FastAPI PDF Embedding Pipeline
+
+This project is a containerized application that accepts PDF uploads through a FastAPI endpoint, processes them via an embedding pipeline, and stores embeddings in Elasticsearch. It also uses Ollama (with the Mistral model) for text embedding.
+
+## Project Structure
+
+project/ ├── docker-compose.yml ├── README.md ├── ollama/ │ └── Dockerfile └── fastapi-app/ ├── Dockerfile ├── requirements.txt ├── app.py ├── cvpipeline.py └── index_raw.py
+
+## Services
+
+- **Elasticsearch:** For storing vector embeddings.
+- **Ollama:** Provides text embeddings (with Mistral installed).
+- **FastAPI App:** Accepts PDF uploads and processes them using the embedding pipeline.
+
+## How to Run
+
+1. Ensure Docker and Docker Compose are installed.
+2. From the project root, run:
+   ```bash
+   docker-compose up --build

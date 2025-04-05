@@ -56,7 +56,7 @@ es_vector_store = ElasticsearchStore(
     index_name="student_cvs",  # Name of the Elasticsearch index
     vector_field='conversation_vector',  # Field to store the vector representation of the text
     text_field='conversation',  # Field to store the original text
-    es_url="http://localhost:9200"  # URL of the local Elasticsearch instance
+    es_url="http://elasticsearch:9200"  # URL of the local Elasticsearch instance
 )
 
 local_llm = Ollama(model="mistral")

@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+PyMuPDF
+llama-index
+llama-index-embeddings-ollama
+llama-index-llms-ollama
+llama-index-vector-stores-elasticsearch
+python-dotenv
+python-multipart
+ollama
