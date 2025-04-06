@@ -55,7 +55,7 @@ def process_pdf(pdf_path):
     # Set up an ingestion pipeline with text splitting and the embedding transformation
     pipeline = IngestionPipeline(
         transformations=[
-            SentenceSplitter(chunk_size=350, chunk_overlap=50),  # Split text into chunks (350 size, 50 overlap)
+            SentenceSplitter(chunk_size=200, chunk_overlap=50),  # Split text into chunks (350 size, 50 overlap)
             ollama_embedding,                                    # Generate embeddings using Ollama
         ],
         vector_store=es_vector_store  # Use the configured Elasticsearch vector store

@@ -59,6 +59,21 @@ services:
     volumes:
       - ./fastapi-app:/app
 
+  streamlit-app:
+    build: ./streamlit-app
+    container_name: streamlit-app
+    depends_on:
+      - elasticsearch
+      - ollama
+    environment:
+      - ELASTICSEARCH_HOST=http://elasticsearch:9200
+      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_MODEL=mistral
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./streamlit-app:/app
+
 volumes:
   elasticsearch-data17:
     driver: local

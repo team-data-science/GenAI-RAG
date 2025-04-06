@@ -18,12 +18,11 @@ es_vector_store = ElasticsearchStore(
     es_url=ES_HOST
 )
 
-# Create a custom httpx client with a 60-second timeout for connection, 120 seconds for reading, etc.
+# Create a custom httpx client with a 60-second timeout
 custom_timeout = httpx.Timeout(connect=60.0, read=120.0, write=60.0, pool=60.0)
 custom_http_client = httpx.Client(timeout=custom_timeout)
 
-# Set up local LLM and embedding model using the custom HTTP client.
-# For non-streaming usage in the query engine:
+# Set up the local LLM and embedding model using the custom HTTP client
 local_llm = Ollama(model=MODEL_NAME, base_url=OLLAMA_HOST, http_client=custom_http_client)
 Settings.embed_model = OllamaEmbedding(MODEL_NAME, base_url=OLLAMA_HOST)
 
@@ -32,39 +31,17 @@ index = VectorStoreIndex.from_vector_store(es_vector_store)
 query_engine = index.as_query_engine(local_llm, similarity_top_k=10)
 
 def main():
+    #query = input("Enter your query: ")
     query = "What bank did liam mcgivney work for?"
     # Create a QueryBundle including the query and its embedding.
     bundle = QueryBundle(query, embedding=Settings.embed_model.get_query_embedding(query))
-    print("\nBundle for Elasticsearch:")
+    print("\nBundle Elasticsearch:")
     print(bundle)
 
-    # Retrieve documents from Elasticsearch using a retriever.
-    retriever = index.as_retriever()
-    retrieved_nodes = retriever.retrieve(query)
-    print("\nDocuments retrieved from Elasticsearch:")
-    for i, node in enumerate(retrieved_nodes, 1):
-        print(f"Document {i}:")
-        print(node.text)
-        print("-----")
-
-    # Execute the full query through the query engine (non-streaming).
+    # Execute the query against the vector store.
     result = query_engine.query(bundle)
     print("\nQuery Result:")
     print(result)
-
-    # ------------------------------
-    # Now, test streaming mode directly with the Ollama client.
-    # This block sends a simple message ("hello, are you there?") to test streaming responses.
-    print("\nTesting streaming chat with a simple message:")
-    stream_messages = [{"role": "user", "content": "hello, are you there?"}]
-    try:
-        # Pass stream=True to enable streaming responses.
-        stream_response = local_llm.chat(messages=stream_messages, stream=True)
-        print("Streaming response (chunks):")
-        for chunk in stream_response:
-            print(chunk)
-    except Exception as e:
-        print(f"Error during streaming test: {e}")
 
 if __name__ == "__main__":
     main()
