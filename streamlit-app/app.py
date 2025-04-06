@@ -6,10 +6,10 @@ from llama_index.embeddings.ollama import OllamaEmbedding
 from llama_index.llms.ollama import Ollama
 from llama_index.vector_stores.elasticsearch import ElasticsearchStore
 
-# Set up environment variables and defaults
-ES_HOST = os.getenv("ELASTICSEARCH_HOST", "http://elasticsearch:9200")
-OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://ollama:11434")
-MODEL_NAME = os.getenv("OLLAMA_MODEL", "mistral")
+# Set environment variables or use defaults
+ES_HOST = os.getenv("ELASTICSEARCH_HOST")
+OLLAMA_HOST = os.getenv("OLLAMA_HOST")
+MODEL_NAME = os.getenv("OLLAMA_MODEL")
 
 # Define the Elasticsearch vector store for this container.
 es_vector_store = ElasticsearchStore(
@@ -19,55 +19,49 @@ es_vector_store = ElasticsearchStore(
     es_url=ES_HOST
 )
 
-# Create a custom httpx client with a 60-second timeout.
-custom_http_client = httpx.Client(timeout=httpx.Timeout(60.0))
+# Create a custom httpx client with extended timeout settings.
+custom_timeout = httpx.Timeout(connect=60.0, read=120.0, write=60.0, pool=60.0)
+custom_http_client = httpx.Client(timeout=custom_timeout)
 
-# Set up local LLM and embedding model.
-local_llm = Ollama(model=MODEL_NAME, base_url="http://ollama:11434", http_client=custom_http_client)
+# Set up local LLM and embedding model using the custom HTTP client.
+local_llm = Ollama(model=MODEL_NAME, base_url=OLLAMA_HOST, http_client=custom_http_client)
 Settings.embed_model = OllamaEmbedding(MODEL_NAME, base_url=OLLAMA_HOST)
 
 # Build a VectorStoreIndex and query engine.
 index = VectorStoreIndex.from_vector_store(es_vector_store)
 query_engine = index.as_query_engine(local_llm, similarity_top_k=10)
 
-# Initialize chat history in session state.
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
-
 st.title("Chat with Retrieval-Augmented Generation")
 
-# Display chat messages using a simple chat interface.
-def display_chat():
-    for role, msg in st.session_state.chat_history:
-        if role == "User":
-            st.markdown(f"**User:** {msg}")
-        else:
-            st.markdown(f"**Bot:** {msg}")
+# Initialize chat history if it doesn't exist.
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-# Chat input: a text input box for the user's question.
-user_input = st.text_input("Your question:")
+# Display previous chat messages.
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
-if st.button("Send") and user_input:
-    # Add user input to chat history.
-    st.session_state.chat_history.append(("User", user_input))
+# Chat input for the user's query.
+prompt = st.chat_input("Ask your question:")
+
+if prompt:
+    # Append the user's message.
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    # Create a QueryBundle for the query.
+    bundle = QueryBundle(prompt, embedding=Settings.embed_model.get_query_embedding(prompt))
     
-    # Create a QueryBundle including the query and its embedding.
-    bundle = QueryBundle(user_input, embedding=Settings.embed_model.get_query_embedding(user_input))
-    
-    print("--------- This is the result from Easticsearch -----------")
-    print(bundle)   
-
-    # Query the engine to retrieve augmented results.
+    # Execute the query against the vector store (non-streaming).
     result = query_engine.query(bundle)
+    response = str(result)
     
-    answer = str(result)
-    print("--------- This is the result from Mistral -----------")
-    print(answer)
+    # Append the assistant's response.
+    st.session_state.messages.append({"role": "assistant", "content": response})
+    with st.chat_message("assistant"):
+        st.markdown(response)
     
-    # Append the answer to the chat history.
-    st.session_state.chat_history.append(("Bot", answer))
-    
-    # Clear the input (optional)
-    st.experimental_rerun()
-
-display_chat()
+    # Optionally, force a UI update.
+    # st.experimental_rerun()  # (Upgrade streamlit if necessary)

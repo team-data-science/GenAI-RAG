@@ -33,27 +33,16 @@ services:
     depends_on:
       - elasticsearch
 
-  ollama:
-    build: ./ollama
-    container_name: ollama
-    ports:
-      - "11434:11434"
-    environment:
-      - OLLAMA_ENV=production
-    volumes:
-      - ollama_data:/data
-
   fastapi-app:
     build: ./fastapi-app
     container_name: fastapi-app
     depends_on:
       - elasticsearch
       - kibana
-      - ollama
     environment:
-      - ELASTICSEARCH_HOST=elasticsearch
-      - OLLAMA_HOST=ollama
-      - OLLAMA_PORT=11434
+      - ELASTICSEARCH_HOST=http://elasticsearch:9200
+      - OLLAMA_HOST=http://host.docker.internal:11434
+      - OLLAMA_MODEL=phi3:mini
     ports:
       - "8000:8000"
     volumes:
@@ -64,18 +53,14 @@ services:
     container_name: streamlit-app
     depends_on:
       - elasticsearch
-      - ollama
     environment:
       - ELASTICSEARCH_HOST=http://elasticsearch:9200
-      - OLLAMA_HOST=http://ollama:11434
-      - OLLAMA_MODEL=mistral
+      - OLLAMA_HOST=http://host.docker.internal:11434
+      - OLLAMA_MODEL=phi3:mini
     ports:
       - "8501:8501"
     volumes:
       - ./streamlit-app:/app
-
 volumes:
   elasticsearch-data17:
-    driver: local
-  ollama_data:
     driver: local

@@ -1,7 +1,3 @@
-# 2024-11-25
-# Andreas Kretz
-# This code currently doesn't work because the preparation of the text for ElasticSearch doesn't work.
-# Try to fix this and write the data.
 
 import json, os  # For JSON handling and OS interactions
 import fitz  # PyMuPDF for PDF extraction
@@ -18,6 +14,11 @@ from index_raw import es_vector_store  # Ensure this file has es_url set correct
 from ollama import chat
 from ollama import ChatResponse
 
+
+OLLAMA_HOST = os.environ.get("OLLAMA_HOST")  # No default here.
+MODEL_NAME = os.environ.get("OLLAMA_MODEL")
+ES_HOST = os.environ.get("ELASTICSEARCH_HOST")
+
 # Extract text from the PDF
 def extract_text_from_pdf(path):
     doc = fitz.open(path)
@@ -29,16 +30,16 @@ def extract_text_from_pdf(path):
     print(text)
     return text
 
-# Feed the PDF text into Mistral (via Ollama) to get a JSON string.
+# Feed the PDF text into phi3:mini (via Ollama) to get a JSON string.
 # This currently fails because the problem is with escaping newline and quote characters.
 def prepare_text_to_json(text_to_summarize):
     instruction_template = (
         'Extract the name and text from the following document and output it in the format {"name": string, "text": string}. '
-        "Only provide the response in this format, with no extra explanation use double quotes for the elements:"
+        "Only provide the response in this format, with no extra explanation use double quotes for the elements and make sure to properly escape control characters so that the text can be parsed by a json parser:"
     )
     
     response: ChatResponse = chat(
-        model='mistral',
+        model=MODEL_NAME,
         messages=[{'role': 'user', 'content': instruction_template + text_to_summarize}]
     )
     
@@ -46,11 +47,11 @@ def prepare_text_to_json(text_to_summarize):
     print(response['message']['content'])
     return response['message']['content']
 
-local_llm = Ollama(model="mistral")
+local_llm = Ollama(model=MODEL_NAME)
 
 # Define a function that processes a PDF given its path.
 def process_pdf(pdf_path):
-    ollama_embedding = OllamaEmbedding("mistral", base_url="http://ollama:11434") # Initialize the embedding model using the "mistral" model
+    ollama_embedding = OllamaEmbedding(MODEL_NAME, base_url=OLLAMA_HOST) # Initialize the embedding model using the "phi3:mini" model
 
     # Set up an ingestion pipeline with text splitting and the embedding transformation
     pipeline = IngestionPipeline(

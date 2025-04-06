@@ -8,7 +8,7 @@ import httpx
 # Set environment variables or use defaults
 ES_HOST = os.getenv("ELASTICSEARCH_HOST", "http://localhost:9200")
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
-MODEL_NAME = os.getenv("OLLAMA_MODEL", "mistral")
+MODEL_NAME = os.getenv("OLLAMA_MODEL", "phi3:mini")
 
 # Define the Elasticsearch vector store
 es_vector_store = ElasticsearchStore(
@@ -33,6 +33,7 @@ query_engine = index.as_query_engine(local_llm, similarity_top_k=10)
 def main():
     #query = input("Enter your query: ")
     query = "What bank did liam mcgivney work for?"
+    #query = "what's liams family name?"
     # Create a QueryBundle including the query and its embedding.
     bundle = QueryBundle(query, embedding=Settings.embed_model.get_query_embedding(query))
     print("\nBundle Elasticsearch:")
