@@ -34,8 +34,7 @@ def extract_text_from_pdf(path):
 # This currently fails because the problem is with escaping newline and quote characters.
 def prepare_text_to_json(text_to_summarize):
     instruction_template = (
-        'Extract the name and text from the following document and output it in the format {"name": string, "text": string}. '
-        "Only provide the response in this format, with no extra explanation use double quotes for the elements and make sure to properly escape control characters so that the text can be parsed by a json parser:"
+        'Extract the name and text from the following document and output it in the format {"name": string, "text": string}. Only provide the response in this format, with no extra explanation use double quotes for the elements:'
     )
     
     response: ChatResponse = chat(
@@ -51,7 +50,7 @@ local_llm = Ollama(model=MODEL_NAME)
 
 # Define a function that processes a PDF given its path.
 def process_pdf(pdf_path):
-    ollama_embedding = OllamaEmbedding(MODEL_NAME, base_url=OLLAMA_HOST) # Initialize the embedding model using the "phi3:mini" model
+    ollama_embedding = OllamaEmbedding(MODEL_NAME, base_url=OLLAMA_HOST) # Initialize the embedding model using "mistral or phi3:mini" model as stated in the docker compose
 
     # Set up an ingestion pipeline with text splitting and the embedding transformation
     pipeline = IngestionPipeline(
@@ -69,6 +68,7 @@ def process_pdf(pdf_path):
     documents = [Document(text=prepped_json['text'], metadata={"name": prepped_json['name']})]
     
     # Run the pipeline to process the document and store embeddings in Elasticsearch
+    # Attention, this only vectorizes the text part of the document & chunks not the meta data - retrieval problem later
     pipeline.run(documents=documents)
     print(".....Done running pipeline.....\n")
 
