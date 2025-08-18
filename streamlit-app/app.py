@@ -14,8 +14,8 @@ MODEL_NAME = os.getenv("OLLAMA_MODEL")
 # Define the Elasticsearch vector store for this container.
 es_vector_store = ElasticsearchStore(
     index_name="student_cvs",
-    vector_field="conversation_vector",
-    text_field="conversation",
+    vector_field="vector",
+    text_field="student_cvs",
     es_url=ES_HOST
 )
 

@@ -14,7 +14,6 @@ from dotenv import load_dotenv  # Importing load_dotenv to load environment vari
 from llama_index.core import VectorStoreIndex, QueryBundle, Response, Settings
 from llama_index.embeddings.ollama import OllamaEmbedding
 from llama_index.llms.ollama import Ollama
-from index_raw import es_vector_store
 from ollama import chat
 from ollama import ChatResponse
 
@@ -53,7 +52,7 @@ def prepare_text_to_json(text_to_summarize):
 # Define an Elasticsearch vector store with configuration for local Elasticsearch
 es_vector_store = ElasticsearchStore(
     index_name="student_cvs",  # Name of the Elasticsearch index
-    vector_field='conversation_vector',  # Field to store the vector representation of the text
+    vector_field='vector',  # Field to store the vector representation of the text
     text_field='student_cvs',  # Field to store the original text
     es_url="http://localhost:9200"  # URL of the local Elasticsearch instance
 )

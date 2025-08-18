@@ -5,7 +5,7 @@ ES_HOST = os.environ.get("ELASTICSEARCH_HOST")
 
 es_vector_store = ElasticsearchStore(
     index_name="student_cvs",
-    vector_field='conversation_vector',
-    text_field='conversation',
+    vector_field='vector',
+    text_field='student_cvs',
     es_url=ES_HOST
 )
