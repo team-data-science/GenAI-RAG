@@ -32,7 +32,6 @@ def extract_text_from_pdf(path):
     return text
 
 # feed the pdf into mistral and get a JSON back
-# this fails currently because I cannot get a good answer from mistral. the problem is with escaping \n and '. 
 
 def prepare_text_to_json(text_to_summarize):
     instruction_template = 'Extract the name and text from the following document and output it in the format {"name": string, "text": string}. Only provide the response in this format, with no extra explanation use double quotes for the elements:'
@@ -55,7 +54,7 @@ def prepare_text_to_json(text_to_summarize):
 es_vector_store = ElasticsearchStore(
     index_name="student_cvs",  # Name of the Elasticsearch index
     vector_field='conversation_vector',  # Field to store the vector representation of the text
-    text_field='conversation',  # Field to store the original text
+    text_field='student_cvs',  # Field to store the original text
     es_url="http://localhost:9200"  # URL of the local Elasticsearch instance
 )
 
@@ -79,8 +78,6 @@ def main():
 
     #create a document (I think this is wrong right now)
     documents = [Document(text=prepped_json['text'], metadata={"name": prepped_json['name']})]
-    #documents = [Document(text=item['text']) for entry in prepped_json]
-    #documents = [Document(text=item['text'], metadata={"name": item['name']}) for item in prepped_json]
 
     pipeline.run(documents=documents)   # Run the pipeline to process documents and store embeddings in Elasticsearch
     print(".....Done running pipeline.....\n")  # Print a completion message
