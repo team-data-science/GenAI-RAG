@@ -29,7 +29,7 @@ Settings.embed_model = OllamaEmbedding(MODEL_NAME, base_url=OLLAMA_HOST)
 
 # Build a VectorStoreIndex and query engine.
 index = VectorStoreIndex.from_vector_store(es_vector_store)
-query_engine = index.as_query_engine(local_llm, similarity_top_k=10)
+query_engine = index.as_query_engine(local_llm, similarity_top_k=5)
 
 st.title("Chat with Retrieval-Augmented Generation")
 
