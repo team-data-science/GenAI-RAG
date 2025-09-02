@@ -34,7 +34,8 @@ def extract_text_from_pdf(path):
 # This currently fails because the problem is with escaping newline and quote characters.
 def prepare_text_to_json(text_to_summarize):
     instruction_template = (
-        'Extract the name and text from the following document and output it in the format {"name": string, "text": string}. Only provide the response in this format, with no extra explanation use double quotes for the elements:'
+         #'Extract the name and text from the following document and output it in the format {"name": string, "text": string}. Only provide the response in this format, with no extra explanation, do not omit content, include every bullet point, use double quotes for the elements:'
+        'You are a lossless extractor. Extract the name and text from the following document and output it in the format {\"name\": string, \"text\": string}. Only provide the response in this format, with no extra explanation. Do not omit, shorten, or summarize any content. Copy every word, bullet point, list item, heading, character, and space exactly as in the document; preserve line breaks as \\n and tabs as \\t. Do not insert or replace with ellipses or placeholders; NEVER output ..., …, unless they appear in the source, in which case copy them exactly. Use double quotes for all JSON strings. If you cannot include every character for any reason, return exactly {\"error\":\"TOO_LONG\"} instead of partial content.'
     )
     
     response: ChatResponse = chat(
