@@ -12,7 +12,12 @@ COPY . .
 
 # Copy the wait script into the image
 COPY wait-for-elasticsearch.sh /wait-for-elasticsearch.sh
-RUN chmod +x /wait-for-elasticsearch.sh
+# this works great on Linux
+#RUN chmod +x /wait-for-elasticsearch.sh
+
+#We need this to fix the stupid line endings in Windows that otherwise mess everything up
+RUN sed -i 's/\r$//' /wait-for-elasticsearch.sh && chmod +x /wait-for-elasticsearch.sh
+
 
 EXPOSE 8000
 
