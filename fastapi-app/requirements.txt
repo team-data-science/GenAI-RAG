@@ -8,3 +8,7 @@ llama-index-vector-stores-elasticsearch
 python-dotenv
 python-multipart
 ollama
+llama-index-embeddings-huggingface==0.2.0
+sentence-transformers==2.6.1
+torch==2.3.0
+transformers==4.44.0

@@ -7,6 +7,12 @@ from llama_index.llms.ollama import Ollama
 from llama_index.vector_stores.elasticsearch import ElasticsearchStore
 from llama_index.core.vector_stores.types import MetadataFilters, ExactMatchFilter
 from llama_index.core.query_engine import RetrieverQueryEngine
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+import torch
+from llama_index.core.postprocessor import SentenceTransformerRerank #using this for the re-ranking to check if the doc actually fits to my query
+
+from llama_index.core.postprocessor import SentenceTransformerRerank
+import numpy as np
 
 # --- Config ---
 ES_HOST = os.getenv("ELASTICSEARCH_HOST")
@@ -26,7 +32,13 @@ custom_timeout = httpx.Timeout(connect=60.0, read=120.0, write=60.0, pool=60.0)
 custom_http_client = httpx.Client(timeout=custom_timeout)
 
 local_llm = Ollama(model=MODEL_NAME, base_url=OLLAMA_HOST, http_client=custom_http_client)
-Settings.embed_model = OllamaEmbedding(MODEL_NAME, base_url=OLLAMA_HOST)
+
+# disabled ollama embedding, because with mistral it doesn't make sense
+#Settings.embed_model = OllamaEmbedding(MODEL_NAME, base_url=OLLAMA_HOST)
+
+# using hugging face now
+Settings.embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-base-en-v1.5")
+
 
 # --- Build index once ---
 index = VectorStoreIndex.from_vector_store(es_vector_store)
@@ -62,6 +74,12 @@ if prompt:
     # --- Embed Query ---
     bundle = QueryBundle(prompt, embedding=Settings.embed_model.get_query_embedding(prompt))
 
+    # --- Add a cross-encoder reranker for higher precision ---
+    reranker = SentenceTransformerRerank(
+        model="cross-encoder/ms-marco-MiniLM-L-6-v2",
+        top_n=10   # rerank and keep only the best 5 chunks
+    )
+
     if use_filter and selected_name.strip():
         filters = MetadataFilters(filters=[
             ExactMatchFilter(key="name", value=selected_name.strip())
@@ -72,13 +90,15 @@ if prompt:
         query_engine = RetrieverQueryEngine.from_args(
             retriever=retriever,
             response_mode="compact",
-            llm=local_llm
+            llm=local_llm,
+            node_postprocessors=[reranker] #reranker implemented to check if the results actually fit to my query
         )
         mode_label = f"🔒 Filtered to `{selected_name.strip()}`"
     else:
         query_engine = index.as_query_engine(
             llm=local_llm,
-            similarity_top_k=5
+            similarity_top_k=10,
+            node_postprocessors=[reranker]
         )
         mode_label = "🌐 No filter applied"
 

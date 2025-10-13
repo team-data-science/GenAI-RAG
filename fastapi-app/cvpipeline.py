@@ -5,6 +5,8 @@ from llama_index.core import Document, Settings  # For managing LlamaIndex docum
 from llama_index.core.node_parser import SentenceSplitter  # To split text into chunks
 from llama_index.core.ingestion import IngestionPipeline  # For managing data ingestion
 from llama_index.embeddings.ollama import OllamaEmbedding  # For generating text embeddings
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding #replaces the ollama embedding that does not work
+import torch
 from llama_index.vector_stores.elasticsearch import ElasticsearchStore  # For vector storage in Elasticsearch
 from dotenv import load_dotenv  # For loading environment variables if needed
 from llama_index.core import VectorStoreIndex, QueryBundle, Response, Settings
@@ -51,13 +53,15 @@ local_llm = Ollama(model=MODEL_NAME)
 
 # Define a function that processes a PDF given its path.
 def process_pdf(pdf_path):
-    ollama_embedding = OllamaEmbedding(MODEL_NAME, base_url=OLLAMA_HOST) # Initialize the embedding model using "mistral or phi3:mini" model as stated in the docker compose
-
+    #I replaced this with a hugging face embedder because embedding with mistral makes no sense
+    #ollama_embedding = OllamaEmbedding(MODEL_NAME, base_url=OLLAMA_HOST) # Initialize the embedding model using "mistral or phi3:mini" model as stated in the docker compose
+    
+    hf_embedding = HuggingFaceEmbedding(model_name="BAAI/bge-base-en-v1.5", normalize=True)
     # Set up an ingestion pipeline with text splitting and the embedding transformation
     pipeline = IngestionPipeline(
         transformations=[
             SentenceSplitter(chunk_size=200, chunk_overlap=50),  # Split text into chunks (350 size, 50 overlap)
-            ollama_embedding,                                    # Generate embeddings using Ollama
+            hf_embedding,                                    # Generate embeddings using hugging face
         ],
         vector_store=es_vector_store  # Use the configured Elasticsearch vector store
     )

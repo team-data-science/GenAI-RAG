@@ -8,6 +8,9 @@ RUN apt-get update && apt-get install -y netcat-openbsd
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# ---- Pre-download Hugging Face model (cached layer) ----
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-base-en-v1.5')"
+
 COPY . .
 
 # Copy the wait script into the image

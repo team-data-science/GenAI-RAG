@@ -5,3 +5,7 @@ llama-index-embeddings-ollama
 llama-index-llms-ollama
 llama-index-vector-stores-elasticsearch
 httpx
+llama-index-embeddings-huggingface==0.2.0
+sentence-transformers==2.6.1
+torch==2.3.0
+transformers==4.44.0
