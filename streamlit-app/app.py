@@ -77,7 +77,7 @@ if prompt:
     # --- Add a cross-encoder reranker for higher precision ---
     reranker = SentenceTransformerRerank(
         model="cross-encoder/ms-marco-MiniLM-L-6-v2",
-        top_n=10   # rerank and keep only the best 5 chunks
+        top_n=5   # rerank and keep only the best 5 chunks
     )
 
     if use_filter and selected_name.strip():
@@ -97,7 +97,7 @@ if prompt:
     else:
         query_engine = index.as_query_engine(
             llm=local_llm,
-            similarity_top_k=10,
+            similarity_top_k=15,
             node_postprocessors=[reranker]
         )
         mode_label = "🌐 No filter applied"
